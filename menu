@@ -1,0 +1,1968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 먹지? 🐯 고려대 랜덤 메뉴 추천기</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #8A1538; /* 고려대 크림슨 */
+            --primary-hover: #A31D45;
+            --primary-glow: rgba(138, 21, 56, 0.4);
+            --secondary: #C5A059; /* 골드 */
+            --secondary-hover: #D6B26A;
+            --dark-bg: #0F0F13;
+            --card-bg: rgba(26, 26, 36, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            background-image: 
+                radial-gradient(at 10% 20%, rgba(138, 21, 56, 0.15) 0px, transparent 50%),
+                radial-gradient(at 90% 80%, rgba(197, 160, 89, 0.1) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .logo-area {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700 0%, var(--secondary) 50%, var(--text-main) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        /* Floating Settings Button */
+        .floating-settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(30, 30, 40, 0.7);
+            border: 1px solid var(--card-border);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-main);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .floating-settings-btn:hover {
+            transform: rotate(45deg) scale(1.1);
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        /* Card styles */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: rgba(138, 21, 56, 0.25);
+            box-shadow: 0 12px 40px rgba(138, 21, 56, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 10px;
+        }
+
+        .card-title i {
+            color: var(--secondary);
+        }
+
+        /* Grid layouts */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 600px) {
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .filter-grid-full {
+                grid-column: span 2;
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons toggle styles (custom segmented controls) */
+        .segmented-control {
+            display: flex;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            width: 100%;
+        }
+
+        .segment-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .segment-btn:hover {
+            color: var(--text-main);
+        }
+
+        .segment-btn.active {
+            background: var(--primary);
+            color: var(--text-main);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        /* Chips / Badges for Category Select */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip-checkbox {
+            display: none;
+        }
+
+        .chip-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        .chip-label:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Checked represents exclusion! */
+        .chip-checkbox:checked + .chip-label {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: var(--error);
+            text-decoration: line-through;
+        }
+
+        .chip-checkbox:checked + .chip-label i {
+            color: var(--error);
+        }
+
+        /* Main Recommendation Card */
+        .recommendation-area {
+            text-align: center;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            background: rgba(0, 0, 0, 0.15);
+            padding: 30px;
+            transition: var(--transition);
+        }
+
+        .recommendation-area.has-content {
+            border-style: solid;
+            border-color: rgba(138, 21, 56, 0.4);
+            background: radial-gradient(circle at center, rgba(138, 21, 56, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+        }
+
+        .recommendation-placeholder {
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+        }
+
+        .recommendation-placeholder i {
+            font-size: 3rem;
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Loaded Menu View */
+        .menu-card {
+            width: 100%;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .menu-emoji {
+            font-size: 4rem;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+        }
+
+        .menu-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #FFF;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            letter-spacing: -0.5px;
+        }
+
+        .menu-tags {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-category { background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60A5FA; }
+        .tag-budget { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; }
+        .tag-distance { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #FBBF24; }
+        .tag-live { background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #A78BFA; }
+
+        .menu-address {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Buttons styles */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 500px) {
+            .btn-group-row {
+                grid-template-columns: 2fr 1fr;
+            }
+            .btn-group-three {
+                grid-template-columns: 1.5fr 1fr 1fr;
+            }
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            user-select: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, #610B23 100%);
+            border: 1px solid rgba(138, 21, 56, 0.4);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover) 0%, #73132F 100%);
+            box-shadow: 0 6px 20px rgba(138, 21, 56, 0.6);
+        }
+
+        .btn-secondary {
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #FCA5A5;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #FFF;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Review Section */
+        .review-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .star-btn {
+            font-size: 2.2rem;
+            color: rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .star-btn:hover,
+        .star-btn.hovered {
+            color: #FBBF24;
+            transform: scale(1.2);
+        }
+
+        .star-btn.active {
+            color: #F59E0B;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .text-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .text-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .text-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .char-counter {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: right;
+        }
+
+        /* Logs Section */
+        .logs-section {
+            margin-top: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .logs-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 8px 16px 8px 36px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--secondary);
+        }
+
+        .reviews-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 4px;
+        }
+
+        /* Scrollbar styling */
+        .reviews-list-container::-webkit-scrollbar,
+        .modal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .reviews-list-container::-webkit-scrollbar-thumb,
+        .modal-body::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .review-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            transition: var(--transition);
+        }
+
+        .review-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .review-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .review-item-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #FFF;
+        }
+
+        .review-item-rating {
+            color: #F59E0B;
+            font-size: 0.85rem;
+        }
+
+        .review-item-content {
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .review-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Modal Dialog for Settings */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: #14141E;
+            border: 1px solid var(--card-border);
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, rgba(138, 21, 56, 0.15) 0%, rgba(20, 20, 30, 0.15) 100%);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-header h3 i {
+            color: var(--secondary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            color: var(--text-main);
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--card-border);
+            background: rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.connected {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.disconnected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #F87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 2000;
+            pointer-events: none;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: auto;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-success i { color: var(--success); }
+        .toast-error { border-left: 4px solid var(--error); }
+        .toast-error i { color: var(--error); }
+        .toast-info { border-left: 4px solid var(--secondary); }
+        .toast-info i { color: var(--secondary); }
+
+        /* Loader Animation */
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Settings Gear -->
+    <div class="floating-settings-btn" id="openSettingsBtn" title="GitHub 및 Google Maps 설정">
+        <i class="fa-solid fa-gear"></i>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-area">🐯</div>
+            <h1>오늘 뭐 먹지?</h1>
+            <p class="subtitle">고려대학교 안암캠퍼스 맞춤형 랜덤 메뉴 추천 시스템</p>
+        </header>
+
+        <!-- Filters Form -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-sliders"></i>
+                <span>추천 필터 조건</span>
+            </div>
+            <div class="filter-grid">
+                <!-- People Filter -->
+                <div class="filter-group">
+                    <span class="filter-label">인원 구성 *</span>
+                    <div class="segmented-control" id="peopleFilter">
+                        <button type="button" class="segment-btn" data-value="혼밥">혼밥</button>
+                        <button type="button" class="segment-btn" data-value="같이">같이</button>
+                    </div>
+                </div>
+
+                <!-- Budget Filter -->
+                <div class="filter-group">
+                    <span class="filter-label">예산 범위 *</span>
+                    <div class="segmented-control" id="budgetFilter">
+                        <button type="button" class="segment-btn" data-value="5천원 이하">5천원 이하</button>
+                        <button type="button" class="segment-btn" data-value="1만원 이하">1만원 이하</button>
+                        <button type="button" class="segment-btn" data-value="상관없음">상관없음</button>
+                    </div>
+                </div>
+
+                <!-- Distance Filter -->
+                <div class="filter-group">
+                    <span class="filter-label">도보 거리</span>
+                    <div class="segmented-control" id="distanceFilter">
+                        <button type="button" class="segment-btn active" data-value="상관없음">상관없음</button>
+                        <button type="button" class="segment-btn" data-value="도보 5분">도보 5분</button>
+                        <button type="button" class="segment-btn" data-value="도보 10분">도보 10분</button>
+                    </div>
+                </div>
+
+                <!-- Excluded Categories -->
+                <div class="filter-group">
+                    <span class="filter-label">제외할 카테고리 (복수 선택)</span>
+                    <div class="chips-container" id="excludeFilter">
+                        <input type="checkbox" id="ex-korean" class="chip-checkbox" value="한식">
+                        <label for="ex-korean" class="chip-label"><i class="fa-solid fa-ban"></i> 한식</label>
+
+                        <input type="checkbox" id="ex-chinese" class="chip-checkbox" value="중식">
+                        <label for="ex-chinese" class="chip-label"><i class="fa-solid fa-ban"></i> 중식</label>
+
+                        <input type="checkbox" id="ex-japanese" class="chip-checkbox" value="일식">
+                        <label for="ex-japanese" class="chip-label"><i class="fa-solid fa-ban"></i> 일식</label>
+
+                        <input type="checkbox" id="ex-western" class="chip-checkbox" value="양식">
+                        <label for="ex-western" class="chip-label"><i class="fa-solid fa-ban"></i> 양식</label>
+
+                        <input type="checkbox" id="ex-bunsik" class="chip-checkbox" value="분식">
+                        <label for="ex-bunsik" class="chip-label"><i class="fa-solid fa-ban"></i> 분식</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="btn-group" style="margin-top: 25px;">
+                <button type="button" class="btn btn-primary" id="recommendBtn">
+                    <i class="fa-solid fa-dice"></i> 오늘 뭐먹지? 🐯
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-utensils"></i>
+                <span>오늘의 추천 메뉴</span>
+            </div>
+            
+            <div class="recommendation-area" id="recommendationArea">
+                <div class="recommendation-placeholder" id="placeholderView">
+                    <i class="fa-solid fa-bowl-food"></i>
+                    <span>위의 조건들을 설정한 뒤 버튼을 클릭해 주세요.</span>
+                </div>
+                <!-- Content injected dynamically -->
+            </div>
+
+            <!-- Action buttons after recommendation -->
+            <div class="btn-group btn-group-three" id="postRecommendActions" style="display: none; margin-top: 20px;">
+                <button type="button" class="btn btn-secondary" id="dislikeBtn">
+                    <i class="fa-solid fa-face-frown"></i> 별로예요 😢
+                </button>
+                <button type="button" class="btn btn-success" id="decideBtn">
+                    <i class="fa-solid fa-circle-check"></i> 이걸로 결정! 😋
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Input Card -->
+        <div class="card review-section" id="reviewSection">
+            <div class="card-title">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>방금 고른 메뉴에 리뷰 쓰기: <span id="reviewTargetMenu" style="color:var(--secondary);">[메뉴명]</span></span>
+            </div>
+            
+            <div class="filter-group" style="align-items: center; margin-bottom: 10px;">
+                <span class="filter-label">별점을 선택해주세요 *</span>
+                <div class="stars-container" id="starsContainer">
+                    <button class="star-btn" data-value="1"><i class="fa-solid fa-star"></i></button>
+                    <button class="star-btn" data-value="2"><i class="fa-solid fa-star"></i></button>
+                    <button class="star-btn" data-value="3"><i class="fa-solid fa-star"></i></button>
+                    <button class="star-btn" data-value="4"><i class="fa-solid fa-star"></i></button>
+                    <button class="star-btn" data-value="5"><i class="fa-solid fa-star"></i></button>
+                </div>
+            </div>
+
+            <div class="text-input-group">
+                <label class="filter-label">한 줄 평 입력</label>
+                <input type="text" class="text-input" id="reviewTextInput" placeholder="예: 양도 넉넉하고 엄청 맛있어요! 강추합니다." maxlength="100">
+                <div class="char-counter"><span id="charCount">0</span>/100</div>
+            </div>
+
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="saveReviewBtn">
+                    <i class="fa-solid fa-floppy-disk"></i> 후기 저장 💾
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Logs Card -->
+        <div class="card logs-section">
+            <div class="card-title">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>전체 후기 통계 및 목록</span>
+            </div>
+
+            <!-- Stats dashboard -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="statTotal">0</div>
+                    <div class="stat-label">누적 리뷰</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="statAvg">0.0</div>
+                    <div class="stat-label">평균 별점</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="statTopMenu" style="font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 4px 0;">없음</div>
+                    <div class="stat-label">최고 평점 메뉴</div>
+                </div>
+            </div>
+
+            <!-- Search and Filter reviews list -->
+            <div class="logs-header-actions">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="search-input" id="searchReviewsInput" placeholder="메뉴 이름 또는 후기로 검색...">
+                </div>
+                <button type="button" class="btn" id="refreshReviewsBtn" style="padding: 8px 12px; font-size: 0.85rem; border-radius: 20px;">
+                    <i class="fa-solid fa-arrows-rotate"></i> 갱신
+                </button>
+            </div>
+
+            <!-- Review Items List -->
+            <div class="reviews-list-container" id="reviewsListContainer">
+                <div class="no-data">리뷰 데이터를 로딩 중이거나 아직 작성된 리뷰가 없습니다.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> 연동 및 설정</h3>
+                <button class="close-btn" id="closeSettingsBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Connection Status -->
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="filter-label">GitHub 연결 상태</span>
+                    <span class="status-badge disconnected" id="connectionBadge"><i class="fa-solid fa-circle-exclamation"></i> 미연결</span>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--card-border); margin: 5px 0;">
+
+                <h4 class="filter-label" style="color: var(--secondary);">1. GitHub API 저장소 설정</h4>
+                
+                <div class="input-group">
+                    <label for="ghToken">GitHub Personal Access Token (PAT)</label>
+                    <input type="password" class="text-input" id="ghToken" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxx">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">* 'repo' 권한이 체크된 토큰이 필요합니다.</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="ghOwner">GitHub 소유자 계정 (Owner)</label>
+                    <input type="text" class="text-input" id="ghOwner" placeholder="예: gokorea1905">
+                </div>
+
+                <div class="input-group">
+                    <label for="ghRepo">GitHub 저장소 이름 (Repository)</label>
+                    <input type="text" class="text-input" id="ghRepo" placeholder="예: menu-reviews">
+                </div>
+
+                <div class="input-group">
+                    <label for="ghPath">저장할 파일 경로 (File Path)</label>
+                    <input type="text" class="text-input" id="ghPath" placeholder="reviews.json" value="reviews.json">
+                </div>
+
+                <h4 class="filter-label" style="color: var(--secondary); margin-top: 10px;">2. Google Maps API 설정 (실시간 맛집)</h4>
+                
+                <div class="input-group">
+                    <label for="gMapsKey">Google Maps API Key (선택)</label>
+                    <input type="password" class="text-input" id="gMapsKey" placeholder="AIzaSyxxxxxxxxxxxxxxxxxxxxx">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">* 입력 시 고려대학교 주변 500m 이내 맛집을 실시간으로 가져옵니다. 비워두면 내장 DB로 동작합니다.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" id="cancelSettingsBtn" style="padding: 10px 18px; font-size: 0.9rem;">취소</button>
+                <button type="button" class="btn btn-primary" id="saveSettingsBtn" style="padding: 10px 18px; font-size: 0.9rem;">설정 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ==============================================================================
+        // 1. 내장 고려대학교 맛집 데이터베이스 (35개)
+        // ==============================================================================
+        const localMenuDatabase = [
+            { name: "고른햇살", category: "분식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🍙" },
+            { name: "동우설렁탕", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 10분", emoji: "🍲" },
+            { name: "용초수", category: "중식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🥟" },
+            { name: "이공김밥", category: "분식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🌯" },
+            { name: "백소정 안암본점", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍤" },
+            { name: "비야부대찌개", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🥘" },
+            { name: "일월의제면소", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 10분", emoji: "🍜" },
+            { name: "킨토토 고대점", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍜" },
+            { name: "시키카츠 고대점", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🥩" },
+            { name: "우정초밥", category: "일식", budget: "상관없음", people: "같이", distance: "도보 10분", emoji: "🍣" },
+            { name: "한술식당 고대안암점", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍛" },
+            { name: "금쪽삼겹 고대본점", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🥓" },
+            { name: "오봉집 고려대점", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🐙" },
+            { name: "토로생선구이", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 10분", emoji: "🐟" },
+            { name: "소문난의정부부대찌개", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🍲" },
+            { name: "현고대닭발 본점", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 10분", emoji: "🐔" },
+            { name: "영철버거", category: "양식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🍔" },
+            { name: "매스플레이트", category: "양식", budget: "1만원 이하", people: "같이", distance: "도보 10분", emoji: "🍝" },
+            { name: "무르무르드구스토", category: "양식", budget: "상관없음", people: "같이", distance: "도보 5분", emoji: "🍕" },
+            { name: "연한담", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍚" },
+            { name: "엽기떡볶이 안암점", category: "분식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🌶️" },
+            { name: "미뇽", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 10분", emoji: "🍱" },
+            { name: "특별식당", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍛" },
+            { name: "야마토텐동", category: "일식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍤" },
+            { name: "천향록", category: "중식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🌶️" },
+            { name: "마라토끼", category: "중식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🍜" },
+            { name: "더씨", category: "중식", budget: "1만원 이하", people: "같이", distance: "도보 5분", emoji: "🥢" },
+            { name: "성민양꼬치", category: "중식", budget: "상관없음", people: "같이", distance: "도보 10분", emoji: "🍢" },
+            { name: "신선설농탕", category: "한식", budget: "1만원 이하", people: "둘다", distance: "도보 5분", emoji: "🥣" },
+            { name: "고기마루", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 10분", emoji: "🥩" },
+            { name: "형제집", category: "한식", budget: "1만원 이하", people: "같이", distance: "도보 10분", emoji: "🥩" },
+            { name: "청석골", category: "분식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🍜" },
+            { name: "디어브레드", category: "양식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🍞" },
+            { name: "헤이피", category: "양식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🍰" },
+            { name: "크레페마스터", category: "양식", budget: "5천원 이하", people: "둘다", distance: "도보 5분", emoji: "🥞" }
+        ];
+
+        let liveMenuDatabase = []; // Google Places API로 실시간 불러온 식당 저장
+        let sessionExcludedList = []; // '별로예요'를 누른 식당 제외 목록
+        let reviewsList = []; // GitHub에서 받아온 전체 후기 데이터
+        let currentRecommendedMenu = null; // 현재 화면에 표시되는 추천된 메뉴 객체
+        let selectedStars = 0; // 현재 선택한 별점 (1~5)
+
+        // ==============================================================================
+        // 2. DOM Elements
+        // ==============================================================================
+        const peopleFilter = document.getElementById('peopleFilter');
+        const budgetFilter = document.getElementById('budgetFilter');
+        const distanceFilter = document.getElementById('distanceFilter');
+        const excludeFilter = document.getElementById('excludeFilter');
+        const recommendBtn = document.getElementById('recommendBtn');
+        const recommendationArea = document.getElementById('recommendationArea');
+        const placeholderView = document.getElementById('placeholderView');
+        const postRecommendActions = document.getElementById('postRecommendActions');
+        const dislikeBtn = document.getElementById('dislikeBtn');
+        const decideBtn = document.getElementById('decideBtn');
+        
+        // Review UI
+        const reviewSection = document.getElementById('reviewSection');
+        const reviewTargetMenu = document.getElementById('reviewTargetMenu');
+        const starsContainer = document.getElementById('starsContainer');
+        const reviewTextInput = document.getElementById('reviewTextInput');
+        const charCount = document.getElementById('charCount');
+        const saveReviewBtn = document.getElementById('saveReviewBtn');
+
+        // Stats Dashboard
+        const statTotal = document.getElementById('statTotal');
+        const statAvg = document.getElementById('statAvg');
+        const statTopMenu = document.getElementById('statTopMenu');
+        const searchReviewsInput = document.getElementById('searchReviewsInput');
+        const refreshReviewsBtn = document.getElementById('refreshReviewsBtn');
+        const reviewsListContainer = document.getElementById('reviewsListContainer');
+
+        // Settings Modal
+        const openSettingsBtn = document.getElementById('openSettingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const connectionBadge = document.getElementById('connectionBadge');
+        
+        const ghTokenInput = document.getElementById('ghToken');
+        const ghOwnerInput = document.getElementById('ghOwner');
+        const ghRepoInput = document.getElementById('ghRepo');
+        const ghPathInput = document.getElementById('ghPath');
+        const gMapsKeyInput = document.getElementById('gMapsKey');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // ==============================================================================
+        // 3. Helper Functions (Toast & Storage)
+        // ==============================================================================
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            let icon = 'fa-circle-info';
+            if (type === 'success') icon = 'fa-circle-check';
+            if (type === 'error') icon = 'fa-circle-exclamation';
+
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3.5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        // Segmented Control Event Handler Helper
+        function initSegmentedControl(container) {
+            container.addEventListener('click', (e) => {
+                const btn = e.target.closest('.segment-btn');
+                if (!btn) return;
+                
+                // Remove active from sibling buttons
+                container.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Clear excluded history when filters change to allow fresh search
+                sessionExcludedList = [];
+            });
+        }
+
+        // ==============================================================================
+        // 4. Settings & GitHub Authentication Management
+        // ==============================================================================
+        function loadSettings() {
+            ghTokenInput.value = localStorage.getItem('github_token') || '';
+            ghOwnerInput.value = localStorage.getItem('github_owner') || '';
+            ghRepoInput.value = localStorage.getItem('github_repo') || '';
+            ghPathInput.value = localStorage.getItem('github_path') || 'reviews.json';
+            gMapsKeyInput.value = localStorage.getItem('google_maps_key') || '';
+            
+            checkGitHubConnectionStatus();
+            
+            // Load Google Maps if Key exists
+            if (gMapsKeyInput.value.trim()) {
+                loadGoogleMapsJS(gMapsKeyInput.value.trim());
+            }
+        }
+
+        async function checkGitHubConnectionStatus() {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner');
+            const repo = localStorage.getItem('github_repo');
+            
+            if (!token || !owner || !repo) {
+                connectionBadge.className = 'status-badge disconnected';
+                connectionBadge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> 설정 필요';
+                return false;
+            }
+
+            try {
+                // Test connection by reading file metadata or repository info
+                const path = localStorage.getItem('github_path') || 'reviews.json';
+                const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (response.ok || response.status === 404) { // 404 is still a valid connection (file just doesn't exist yet)
+                    connectionBadge.className = 'status-badge connected';
+                    connectionBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i> 연결됨';
+                    return true;
+                } else {
+                    throw new Error();
+                }
+            } catch (err) {
+                connectionBadge.className = 'status-badge disconnected';
+                connectionBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> 인증 에러';
+                return false;
+            }
+        }
+
+        // Save Settings Handler
+        saveSettingsBtn.addEventListener('click', async () => {
+            const token = ghTokenInput.value.trim();
+            const owner = ghOwnerInput.value.trim();
+            const repo = ghRepoInput.value.trim();
+            const path = ghPathInput.value.trim() || 'reviews.json';
+            const mapsKey = gMapsKeyInput.value.trim();
+            
+            localStorage.setItem('github_token', token);
+            localStorage.setItem('github_owner', owner);
+            localStorage.setItem('github_repo', repo);
+            localStorage.setItem('github_path', path);
+            
+            const prevMapsKey = localStorage.getItem('google_maps_key') || '';
+            localStorage.setItem('google_maps_key', mapsKey);
+            
+            showToast('설정이 브라우저에 임시 저장되었습니다.', 'info');
+            
+            // Test connection
+            const isConnected = await checkGitHubConnectionStatus();
+            if (isConnected) {
+                showToast('GitHub 연동이 성공적으로 활성화되었습니다! 🚀', 'success');
+                loadReviewsFromGitHub();
+            } else {
+                showToast('GitHub 연동 인증에 실패했습니다. 토큰 및 저장소명을 확인하세요.', 'error');
+            }
+
+            // Load Google Maps if API key changed
+            if (mapsKey && mapsKey !== prevMapsKey) {
+                loadGoogleMapsJS(mapsKey);
+            } else if (!mapsKey) {
+                liveMenuDatabase = []; // clear google places database if key removed
+            }
+
+            settingsModal.classList.remove('open');
+        });
+
+        // ==============================================================================
+        // 5. Google Maps JavaScript API (Places Library) 연동
+        // ==============================================================================
+        function loadGoogleMapsJS(apiKey) {
+            if (window.google && window.google.maps && window.google.maps.places) {
+                fetchGooglePlacesData();
+                return;
+            }
+
+            // Remove any existing script tag
+            const existingScript = document.getElementById('google-maps-js');
+            if (existingScript) existingScript.remove();
+
+            const script = document.createElement('script');
+            script.id = 'google-maps-js';
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=ko&callback=initGooglePlacesService`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = () => {
+                showToast('구글 맵스 API 로딩 실패. 키를 확인해 주세요.', 'error');
+            };
+            document.head.appendChild(script);
+        }
+
+        // Global Callback defined on window
+        window.initGooglePlacesService = function() {
+            showToast('Google Maps Places Library 연결 성공 🐯', 'success');
+            fetchGooglePlacesData();
+        };
+
+        function fetchGooglePlacesData() {
+            try {
+                // Coordinate center: Korea University Main Gate/Anam Station area
+                const kuCoords = new google.maps.LatLng(37.5894, 127.0325);
+                const dummyDiv = document.createElement('div');
+                const service = new google.maps.places.PlacesService(dummyDiv);
+
+                const request = {
+                    location: kuCoords,
+                    radius: 500,
+                    type: ['restaurant']
+                };
+
+                service.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        parseAndInjectGooglePlaces(results, kuCoords);
+                    } else {
+                        console.error('Google Places NearbySearch failed:', status);
+                        showToast(`실시간 식당 조회 실패: ${status}`, 'error');
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                showToast('구글 맵스 쿼리 중 오류 발생.', 'error');
+            }
+        }
+
+        function parseAndInjectGooglePlaces(places, centerCoords) {
+            liveMenuDatabase = places.map(place => {
+                // Distance via Haversine
+                const placeLoc = place.geometry.location;
+                const distance = calculateDistance(
+                    centerCoords.lat(), centerCoords.lng(),
+                    placeLoc.lat(), placeLoc.lng()
+                );
+
+                const name = place.name;
+                const lowerName = name.toLowerCase();
+                let category = "한식"; // Default
+                let emoji = "🍲";
+
+                // Heuristic Classification based on Korean Keywords
+                if (/(초밥|스시|카츠|돈까스|라멘|우동|소바|이자카야|돈가스|텐동|야끼|규동|사케|덮밥|미뇽)/.test(lowerName)) {
+                    category = "일식";
+                    emoji = "🍣";
+                } else if (/(짬뽕|짜장|마라|마라탕|양꼬치|반점|객잔|차이나|꿔바로우|용초수|향록)/.test(lowerName)) {
+                    category = "중식";
+                    emoji = "🥟";
+                } else if (/(떡볶이|김밥|분식|햇살|오뎅|순대|튀김|이공|엽떡)/.test(lowerName)) {
+                    category = "분식";
+                    emoji = "🍙";
+                } else if (/(파스타|피자|버거|스테이크|양식|샌드위치|샐러드|이탈리안|버거|브레드|크레페|헤이피)/.test(lowerName)) {
+                    category = "양식";
+                    emoji = "🍝";
+                } else {
+                    // Check place types
+                    if (place.types && place.types.includes('bakery')) {
+                        category = "양식";
+                        emoji = "🍞";
+                    } else if (place.types && place.types.includes('cafe')) {
+                        category = "양식";
+                        emoji = "☕";
+                    }
+                }
+
+                // Map distance to walk time
+                const distanceText = distance <= 350 ? "도보 5분" : "도보 10분";
+
+                // Map price level to budget tiers
+                let budget = "1만원 이하";
+                if (place.price_level !== undefined) {
+                    if (place.price_level <= 1) budget = "5천원 이하";
+                    else if (place.price_level === 2) budget = "1만원 이하";
+                    else budget = "상관없음";
+                } else {
+                    // Common budget fallback heuristics
+                    if (category === '분식' || lowerName.includes('국수') || lowerName.includes('김밥') || lowerName.includes('버거')) {
+                        budget = "5천원 이하";
+                    } else if (category === '일식' && (lowerName.includes('스시') || lowerName.includes('초밥') || lowerName.includes('참치'))) {
+                        budget = "상관없음";
+                    }
+                }
+
+                // Map party size
+                let people = "둘다";
+                if (/(삼겹살|갈비|회식|부대찌개|보쌈|족발|오봉집|전골|삼겹)/.test(lowerName)) {
+                    people = "같이";
+                } else if (/(김밥|라멘|우동|컵밥|덮밥|샌드위치|샐러드)/.test(lowerName)) {
+                    people = "혼밥";
+                }
+
+                return {
+                    name: name,
+                    category: category,
+                    budget: budget,
+                    people: people,
+                    distance: distanceText,
+                    emoji: emoji,
+                    isLive: true,
+                    vicinity: place.vicinity || ''
+                };
+            });
+
+            showToast(`구글 맵스 실시간 데이터 ${liveMenuDatabase.length}개 로딩 완료! 🗺️`, 'success');
+        }
+
+        // Distance formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Earth radius in meters
+            const p1 = lat1 * Math.PI / 180;
+            const p2 = lat2 * Math.PI / 180;
+            const dp = (lat2 - lat1) * Math.PI / 180;
+            const dl = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dp/2) * Math.sin(dp/2) +
+                      Math.cos(p1) * Math.cos(p2) *
+                      Math.sin(dl/2) * Math.sin(dl/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-c));
+            return R * c;
+        }
+
+        // ==============================================================================
+        // 6. GitHub API CRUD Operations
+        // ==============================================================================
+        async function makeGitHubRequest(options = {}) {
+            const token = localStorage.getItem('github_token');
+            const owner = localStorage.getItem('github_owner');
+            const repo = localStorage.getItem('github_repo');
+            const path = localStorage.getItem('github_path') || 'reviews.json';
+            
+            if (!token || !owner || !repo) {
+                throw new Error('GitHub 설정을 마쳐주세요. 우측 상단의 톱니바퀴 버튼을 클릭하세요!');
+            }
+            
+            const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+            const headers = {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+            };
+            
+            const response = await fetch(url, { ...options, headers });
+            if (!response.ok && response.status !== 404) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.message || `API HTTP ${response.status}`);
+            }
+            return response;
+        }
+
+        async function loadReviewsFromGitHub() {
+            reviewsListContainer.innerHTML = '<div class="no-data"><i class="fa-solid fa-spinner loader"></i> 깃허브에서 리뷰 목록을 불러오는 중...</div>';
+            
+            try {
+                const response = await makeGitHubRequest();
+                if (response.status === 404) {
+                    reviewsList = [];
+                    updateReviewsDashboard();
+                    return;
+                }
+                const data = await response.json();
+                const content = atob(data.content.replace(/\s/g, ''));
+                reviewsList = JSON.parse(decodeURIComponent(escape(content)));
+                
+                // Sort by date descending
+                reviewsList.sort((a, b) => new Date(b.date) - new Date(a.date));
+                updateReviewsDashboard();
+            } catch (err) {
+                console.error(err);
+                reviewsListContainer.innerHTML = `<div class="no-data" style="color:var(--error);"><i class="fa-solid fa-triangle-exclamation"></i> 로딩 실패: ${err.message}</div>`;
+            }
+        }
+
+        async function saveReviewToGitHub(newReview) {
+            saveReviewBtn.disabled = true;
+            saveReviewBtn.innerHTML = '<i class="fa-solid fa-spinner loader"></i> 저장 중...';
+            
+            try {
+                let sha = null;
+                let currentList = [];
+                
+                // 1. Get existing file content to find SHA & append
+                const response = await makeGitHubRequest().catch(() => null);
+                if (response && response.status === 200) {
+                    const data = await response.json();
+                    sha = data.sha;
+                    const content = atob(data.content.replace(/\s/g, ''));
+                    currentList = JSON.parse(decodeURIComponent(escape(content)));
+                }
+                
+                // Add new item
+                currentList.push(newReview);
+                
+                // 2. Commit it
+                const updatedBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(currentList, null, 2))));
+                const body = {
+                    message: `add review for ${newReview.menuName} via tiger-recommender`,
+                    content: updatedBase64
+                };
+                if (sha) {
+                    body.sha = sha;
+                }
+                
+                const putResponse = await makeGitHubRequest({
+                    method: 'PUT',
+                    body: JSON.stringify(body)
+                });
+                
+                if (putResponse.ok) {
+                    reviewsList = currentList;
+                    reviewsList.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    updateReviewsDashboard();
+                    
+                    // Reset review inputs
+                    reviewSection.style.display = 'none';
+                    reviewTextInput.value = '';
+                    charCount.innerText = '0';
+                    resetStars();
+                    
+                    showToast('리뷰가 깃허브에 영구 저장되었습니다! 🐯', 'success');
+                    
+                    // Smooth scroll to top of logs
+                    document.querySelector('.logs-section').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    throw new Error('전송 중 상태 응답 에러');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(`저장에 실패했습니다: ${err.message}`, 'error');
+            } finally {
+                saveReviewBtn.disabled = false;
+                saveReviewBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> 후기 저장 💾';
+            }
+        }
+
+        // ==============================================================================
+        // 7. Core Recommender Logics
+        // ==============================================================================
+        function runRandomMenuRecommendation() {
+            // Get selected values
+            const activePeopleBtn = peopleFilter.querySelector('.segment-btn.active');
+            const activeBudgetBtn = budgetFilter.querySelector('.segment-btn.active');
+            const activeDistanceBtn = distanceFilter.querySelector('.segment-btn.active');
+            
+            // Check validation
+            if (!activePeopleBtn || !activeBudgetBtn) {
+                showToast('인원 구성과 예산 범위를 선택해 주세요! 🐯', 'error');
+                return;
+            }
+
+            const peopleVal = activePeopleBtn.dataset.value;
+            const budgetVal = activeBudgetBtn.dataset.value;
+            const distanceVal = activeDistanceBtn ? activeDistanceBtn.dataset.value : '상관없음';
+
+            // Get excluded categories (checked ones)
+            const excludedCategories = Array.from(excludeFilter.querySelectorAll('.chip-checkbox:checked'))
+                .map(cb => cb.value);
+
+            // Merge local and live databases
+            const fullDatabase = [...localMenuDatabase, ...liveMenuDatabase];
+
+            // Perform filtering
+            let filteredList = fullDatabase.filter(menu => {
+                // 1. People filter
+                if (menu.people !== '둘다' && menu.people !== peopleVal) {
+                    return false;
+                }
+
+                // 2. Budget filter
+                if (budgetVal !== '상관없음') {
+                    if (budgetVal === '5천원 이하' && menu.budget !== '5천원 이하') {
+                        return false;
+                    }
+                    if (budgetVal === '1만원 이하' && menu.budget === '상관없음') {
+                        return false;
+                    }
+                }
+
+                // 3. Distance filter
+                if (distanceVal !== '상관없음') {
+                    if (distanceVal === '도보 5분' && menu.distance !== '도보 5분') {
+                        return false;
+                    }
+                }
+
+                // 4. Excluded categories
+                if (excludedCategories.includes(menu.category)) {
+                    return false;
+                }
+
+                // 5. Exclude session disliked menus
+                if (sessionExcludedList.includes(menu.name)) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // Handle empty list cases
+            if (filteredList.length === 0) {
+                // If it's because everything is in session excluded list
+                const hasExcludedAll = fullDatabase.filter(menu => {
+                    if (menu.people !== '둘다' && menu.people !== peopleVal) return false;
+                    if (budgetVal !== '상관없음') {
+                        if (budgetVal === '5천원 이하' && menu.budget !== '5천원 이하') return false;
+                        if (budgetVal === '1만원 이하' && menu.budget === '상관없음') return false;
+                    }
+                    if (distanceVal !== '상관없음' && distanceVal === '도보 5분' && menu.distance !== '도보 5분') return false;
+                    if (excludedCategories.includes(menu.category)) return false;
+                    return true;
+                }).length > 0;
+
+                if (hasExcludedAll && sessionExcludedList.length > 0) {
+                    recommendationArea.innerHTML = `
+                        <div class="menu-card" style="padding: 20px;">
+                            <div class="menu-emoji">🔄</div>
+                            <div class="menu-name" style="font-size:1.5rem; color:var(--secondary);">모든 메뉴를 다 봤어요!</div>
+                            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">조건을 변경하거나 제외 목록을 초기화할까요?</p>
+                            <button type="button" class="btn" id="resetSessionExcludesBtn" style="margin: 0 auto; padding:8px 16px; font-size:0.85rem;">제외 목록 초기화 🔄</button>
+                        </div>
+                    `;
+                    recommendationArea.classList.add('has-content');
+                    postRecommendActions.style.display = 'none';
+                    reviewSection.style.display = 'none';
+                    
+                    document.getElementById('resetSessionExcludesBtn').addEventListener('click', () => {
+                        sessionExcludedList = [];
+                        showToast('제외된 이전 메뉴들이 초기화되었습니다!', 'success');
+                        runRandomMenuRecommendation();
+                    });
+                } else {
+                    recommendationArea.innerHTML = `
+                        <div class="recommendation-placeholder">
+                            <i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);"></i>
+                            <span style="font-weight:700; color:var(--warning);">조건에 맞는 메뉴가 없어요!</span>
+                            <span style="font-size:0.85rem; color:var(--text-muted);">제외 카테고리를 해제하거나 예산/거리 필터를 넓혀보세요.</span>
+                        </div>
+                    `;
+                    recommendationArea.classList.remove('has-content');
+                    postRecommendActions.style.display = 'none';
+                    reviewSection.style.display = 'none';
+                }
+                return;
+            }
+
+            // Pick 1 random item
+            const randomIndex = Math.floor(Math.random() * filteredList.length);
+            const pickedMenu = filteredList[randomIndex];
+            currentRecommendedMenu = pickedMenu;
+
+            // Render picked menu
+            let liveTagHtml = pickedMenu.isLive ? `<span class="tag tag-live"><i class="fa-solid fa-map-location-dot"></i> Google Maps</span>` : '';
+            let addressHtml = pickedMenu.vicinity ? `<div class="menu-address"><i class="fa-solid fa-location-dot"></i> ${pickedMenu.vicinity}</div>` : '';
+
+            recommendationArea.innerHTML = `
+                <div class="menu-card">
+                    <span class="menu-emoji">${pickedMenu.emoji}</span>
+                    <h2 class="menu-name">${pickedMenu.name}</h2>
+                    <div class="menu-tags">
+                        <span class="tag tag-category">${pickedMenu.category}</span>
+                        <span class="tag tag-budget">${pickedMenu.budget}</span>
+                        <span class="tag tag-distance">${pickedMenu.distance}</span>
+                        ${liveTagHtml}
+                    </div>
+                    ${addressHtml}
+                </div>
+            `;
+            recommendationArea.classList.add('has-content');
+
+            // Show action buttons
+            postRecommendActions.style.display = 'grid';
+            
+            // Hide review section when recommendation changes
+            reviewSection.style.display = 'none';
+        }
+
+        // ==============================================================================
+        // 8. Stats & Reviews Dashboard Rendering
+        // ==============================================================================
+        function updateReviewsDashboard() {
+            const filteredReviews = filterReviewsList();
+            
+            // Render Reviews Items
+            if (filteredReviews.length === 0) {
+                reviewsListContainer.innerHTML = '<div class="no-data">조건에 맞거나 등록된 리뷰가 없습니다.</div>';
+            } else {
+                reviewsListContainer.innerHTML = filteredReviews.map(review => {
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= review.rating) {
+                            starsHtml += '<i class="fa-solid fa-star"></i>';
+                        } else {
+                            starsHtml += '<i class="fa-regular fa-star"></i>';
+                        }
+                    }
+
+                    const dateFormatted = new Date(review.date).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    return `
+                        <div class="review-item">
+                            <div class="review-item-header">
+                                <div class="review-item-title">${review.menuName}</div>
+                                <div class="review-item-rating">${starsHtml}</div>
+                            </div>
+                            <div class="review-item-content">${review.review || '후기가 없습니다.'}</div>
+                            <div class="review-item-meta">
+                                <span><i class="fa-solid fa-tags"></i> ${review.category || '기타'} | ${review.priceRange || '정보 없음'}</span>
+                                <span>${dateFormatted}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Calculate Dashboard Statistics
+            if (reviewsList.length === 0) {
+                statTotal.innerText = '0';
+                statAvg.innerText = '0.0';
+                statTopMenu.innerText = '없음';
+                return;
+            }
+
+            // Total
+            statTotal.innerText = reviewsList.length;
+
+            // Average Star Rating
+            const totalRatingSum = reviewsList.reduce((sum, r) => sum + r.rating, 0);
+            const averageRating = (totalRatingSum / reviewsList.length).toFixed(1);
+            statAvg.innerText = averageRating;
+
+            // Highest Rated Menu (Average rating per unique menu with at least 1 review)
+            const menuRatings = {};
+            reviewsList.forEach(r => {
+                if (!menuRatings[r.menuName]) {
+                    menuRatings[r.menuName] = { sum: 0, count: 0 };
+                }
+                menuRatings[r.menuName].sum += r.rating;
+                menuRatings[r.menuName].count += 1;
+            });
+
+            let topMenuName = '없음';
+            let highestMenuAvg = 0;
+            
+            for (const menuName in menuRatings) {
+                const avg = menuRatings[menuName].sum / menuRatings[menuName].count;
+                if (avg > highestMenuAvg) {
+                    highestMenuAvg = avg;
+                    topMenuName = `${menuName} (${avg.toFixed(1)}점)`;
+                }
+            }
+            statTopMenu.innerText = topMenuName;
+            statTopMenu.title = topMenuName; // Tooltip for full text if truncated
+        }
+
+        function filterReviewsList() {
+            const query = searchReviewsInput.value.toLowerCase().trim();
+            if (!query) return reviewsList;
+
+            return reviewsList.filter(review => {
+                return (
+                    review.menuName.toLowerCase().includes(query) ||
+                    (review.review && review.review.toLowerCase().includes(query)) ||
+                    (review.category && review.category.toLowerCase().includes(query))
+                );
+            });
+        }
+
+        // ==============================================================================
+        // 9. Interactive Event Listeners (UI Actions)
+        // ==============================================================================
+        
+        // Settings Modal Toggle
+        openSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('open');
+        });
+
+        const closeModal = () => settingsModal.classList.remove('open');
+        closeSettingsBtn.addEventListener('click', closeModal);
+        cancelSettingsBtn.addEventListener('click', closeModal);
+        
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeModal();
+        });
+
+        // Initialize Filter Segment Controls
+        initSegmentedControl(peopleFilter);
+        initSegmentedControl(budgetFilter);
+        initSegmentedControl(distanceFilter);
+
+        // Exclude checkboxes clear excludes cache too
+        excludeFilter.querySelectorAll('.chip-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+                sessionExcludedList = [];
+            });
+        });
+
+        // Today's Recommender Click
+        recommendBtn.addEventListener('click', () => {
+            runRandomMenuRecommendation();
+        });
+
+        // Dislike Button Click (Exclude and pick next)
+        dislikeBtn.addEventListener('click', () => {
+            if (currentRecommendedMenu) {
+                sessionExcludedList.push(currentRecommendedMenu.name);
+                showToast(`'${currentRecommendedMenu.name}' 메뉴를 제외하고 다시 고릅니다.`, 'info');
+                runRandomMenuRecommendation();
+            }
+        });
+
+        // Decide Button Click (Locks choice, shows review writing)
+        decideBtn.addEventListener('click', () => {
+            if (!currentRecommendedMenu) return;
+            
+            // Check connection first to remind user
+            const ghToken = localStorage.getItem('github_token');
+            if (!ghToken) {
+                showToast('리뷰 저장을 위해 먼저 설정(우측 톱니바퀴)에서 GitHub 설정을 연동해 주세요!', 'warning');
+                settingsModal.classList.add('open');
+                return;
+            }
+
+            reviewTargetMenu.innerText = currentRecommendedMenu.name;
+            reviewSection.style.display = 'block';
+            resetStars();
+            
+            // Smooth scroll to review section
+            reviewSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Star interactive selector
+        starsContainer.addEventListener('mouseover', (e) => {
+            const btn = e.target.closest('.star-btn');
+            if (!btn) return;
+            const hoverValue = parseInt(btn.dataset.value);
+            
+            starsContainer.querySelectorAll('.star-btn').forEach(star => {
+                const val = parseInt(star.dataset.value);
+                if (val <= hoverValue) {
+                    star.classList.add('hovered');
+                } else {
+                    star.classList.remove('hovered');
+                }
+            });
+        });
+
+        starsContainer.addEventListener('mouseleave', () => {
+            starsContainer.querySelectorAll('.star-btn').forEach(star => {
+                star.classList.remove('hovered');
+            });
+        });
+
+        starsContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.star-btn');
+            if (!btn) return;
+            selectedStars = parseInt(btn.dataset.value);
+            
+            starsContainer.querySelectorAll('.star-btn').forEach(star => {
+                const val = parseInt(star.dataset.value);
+                if (val <= selectedStars) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        });
+
+        function resetStars() {
+            selectedStars = 0;
+            starsContainer.querySelectorAll('.star-btn').forEach(star => {
+                star.classList.remove('active', 'hovered');
+            });
+        }
+
+        // Char count tracker
+        reviewTextInput.addEventListener('input', () => {
+            charCount.innerText = reviewTextInput.value.length;
+        });
+
+        // Save Review Submit Click
+        saveReviewBtn.addEventListener('click', () => {
+            if (!currentRecommendedMenu) return;
+            
+            if (selectedStars === 0) {
+                showToast('별점을 선택해 주세요! ⭐', 'error');
+                return;
+            }
+
+            const reviewObj = {
+                date: new Date().toISOString(),
+                menuName: currentRecommendedMenu.name,
+                category: currentRecommendedMenu.category,
+                rating: selectedStars,
+                review: reviewTextInput.value.trim(),
+                priceRange: currentRecommendedMenu.budget
+            };
+
+            saveReviewToGitHub(reviewObj);
+        });
+
+        // Search reviews list filter
+        searchReviewsInput.addEventListener('input', () => {
+            updateReviewsDashboard();
+        });
+
+        // Refresh reviews list
+        refreshReviewsBtn.addEventListener('click', () => {
+            loadReviewsFromGitHub();
+            showToast('리뷰 목록을 갱신하였습니다.', 'success');
+        });
+
+        // ==============================================================================
+        // 10. Initialization
+        // ==============================================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            
+            // Check if GitHub credentials exist, if so load reviews automatically
+            const token = localStorage.getItem('github_token');
+            if (token) {
+                loadReviewsFromGitHub();
+            } else {
+                showToast('우측 상단 톱니바퀴 설정을 클릭하여 GitHub 연동 설정을 채워보세요!', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
